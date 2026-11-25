@@ -1,5 +1,9 @@
 # TenShipmentsProject
 
+Admin Auth :  
+user : developer.sami@egyxpress.eg
+pass : dev12345
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.2.
 
 ## Development server

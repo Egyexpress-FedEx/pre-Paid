@@ -1,0 +1,87 @@
+<main class="login-page">
+  <section class="login-visual" aria-label="Egypt Express logistics">
+    <div class="login-visual__content">
+      <img class="login-visual__logo" src="/images/EGLOGO.png" alt="Egypt Express" width="270" height="70" />
+      <div class="login-visual__copy">
+        <span class="login-visual__eyebrow">SMART LOGISTICS PLATFORM</span>
+        <h1>Move your business<br /><span>forward.</span></h1>
+        <p>Manage your shipments with confidence, speed, and complete visibility.</p>
+      </div>
+      <div class="login-visual__footer">
+        <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Egypt Express</span>
+        <span><i class="fa-solid fa-arrow-up-right-dots" aria-hidden="true"></i> Delivering a smaller world</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="login-panel">
+    <div class="login-card">
+      <div class="login-card__brand">
+        <div class="login-card__brand-mark" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <span>Egypt <strong>Express</strong></span>
+      </div>
+
+      <div class="login-card__intro">
+        <span class="login-card__kicker">PREPAID PORTAL</span>
+        <h2>Welcome back</h2>
+        <p>Sign in to manage your shipments and customers.</p>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="login-error" role="alert" aria-live="polite">
+          <span class="login-error__icon" aria-hidden="true"><i class="fa-solid fa-circle-exclamation"></i></span>
+          <div class="login-error__content">
+            <strong>Sign-in failed</strong>
+            <p>{{ errorMessage() }}</p>
+          </div>
+        </div>
+      }
+
+      <form class="login-form" [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+        <div class="form-field">
+          <label for="account-number">User ID / Email</label>
+          <div class="input-wrap" [class.input-wrap--invalid]="submitted() && loginForm.controls.accountNumber.invalid">
+            <i class="fa-regular fa-user input-wrap__icon" aria-hidden="true"></i>
+            <input id="account-number" type="text" formControlName="accountNumber" placeholder="Enter your account number" autocomplete="username" />
+          </div>
+          @if (submitted() && loginForm.controls.accountNumber.hasError('required')) {
+            <small class="field-error">Account number is required.</small>
+          }
+        </div>
+
+        <div class="form-field">
+          <div class="form-field__header">
+            <label for="password">Password</label>
+            <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+          </div>
+          <div class="input-wrap" [class.input-wrap--invalid]="submitted() && loginForm.controls.password.invalid">
+            <i class="fa-solid fa-lock input-wrap__icon" aria-hidden="true"></i>
+            <input id="password" [type]="isPasswordVisible() ? 'text' : 'password'" formControlName="password" placeholder="Enter your password" autocomplete="current-password" />
+            <button class="input-wrap__action" type="button" [attr.aria-label]="isPasswordVisible() ? 'Hide password' : 'Show password'" (click)="togglePasswordVisibility()">
+              <i class="fa-regular" [class.fa-eye]="!isPasswordVisible()" [class.fa-eye-slash]="isPasswordVisible()" aria-hidden="true"></i>
+            </button>
+          </div>
+          @if (submitted() && loginForm.controls.password.hasError('required')) {
+            <small class="field-error">Password is required.</small>
+          }
+        </div>
+
+        <label class="remember-me">
+          <input type="checkbox" formControlName="rememberMe" />
+          <span>Remember me</span>
+        </label>
+
+        <button class="login-submit" type="submit" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span> Signing in...
+          } @else {
+            Sign in <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+          }
+        </button>
+      </form>
+
+      <p class="login-card__support">Need help? <a href="mailto:support@egypt-express.com">Contact support</a></p>
+      <p class="login-card__copyright">© 2026 Egypt Express. All rights reserved.</p>
+    </div>
+  </section>
+</main>

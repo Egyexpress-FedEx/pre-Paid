@@ -1,0 +1,160 @@
+<main class="create-shipment-page">
+  <header class="page-heading">
+    <div>
+      <span class="page-kicker">SHIPMENT WORKSPACE</span>
+      <h1>Create shipment</h1>
+      <p>Enter the shipment information in three simple steps.</p>
+    </div>
+    <div class="account-chip"><i class="fa-regular fa-user" aria-hidden="true"></i><span>Account</span><strong>{{ accountNumber || '—' }}</strong></div>
+  </header>
+
+  @if (customerState.shipmentRemaining() <= 0) {
+    <section class="limit-exhausted-banner" role="alert">
+      <span class="limit-exhausted-banner__icon"><i class="fa-solid fa-lock" aria-hidden="true"></i></span>
+      <div>
+        <strong>No active shipment allowance</strong>
+        <p>All packages are full or disabled. Contact the administrator to add a package or activate an existing one.</p>
+      </div>
+    </section>
+  }
+
+  <nav class="shipment-stepper" aria-label="Shipment creation steps">
+    <button class="stepper-item" type="button" [class.stepper-item--active]="activeStep() === 1" [class.stepper-item--complete]="activeStep() > 1" [attr.aria-current]="activeStep() === 1 ? 'step' : null" (click)="goToStep(1)">
+      <span class="stepper-item__number">@if (activeStep() > 1) {<i class="fa-solid fa-check" aria-hidden="true"></i>} @else {01}</span>
+      <span class="stepper-item__text"><strong>Shipper</strong><small>Origin details</small></span>
+    </button>
+    <span class="stepper-line" [class.stepper-line--complete]="activeStep() > 1" aria-hidden="true"></span>
+    <button class="stepper-item" type="button" [class.stepper-item--active]="activeStep() === 2" [class.stepper-item--complete]="activeStep() > 2" [attr.aria-current]="activeStep() === 2 ? 'step' : null" (click)="goToStep(2)">
+      <span class="stepper-item__number">@if (activeStep() > 2) {<i class="fa-solid fa-check" aria-hidden="true"></i>} @else {02}</span>
+      <span class="stepper-item__text"><strong>Consignee</strong><small>Destination details</small></span>
+    </button>
+    <span class="stepper-line" [class.stepper-line--complete]="activeStep() > 2" aria-hidden="true"></span>
+    <button class="stepper-item" type="button" [class.stepper-item--active]="activeStep() === 3" [attr.aria-current]="activeStep() === 3 ? 'step' : null" (click)="goToStep(3)">
+      <span class="stepper-item__number">03</span>
+      <span class="stepper-item__text"><strong>Shipment</strong><small>Pieces &amp; service</small></span>
+    </button>
+  </nav>
+
+  <form class="shipment-form" [formGroup]="shipmentForm" novalidate>
+    @if (activeStep() === 1) {
+      <section class="form-panel" aria-labelledby="shipper-title">
+        <div class="form-panel__heading">
+          <span class="form-panel__icon"><i class="fa-solid fa-warehouse" aria-hidden="true"></i></span>
+          <div><span class="form-panel__eyebrow">STEP 01</span><h2 id="shipper-title">Shipper details</h2><p>Where will this shipment be collected from?</p></div>
+        </div>
+
+        <div class="field-grid" [formGroup]="senderForm">
+          <label class="form-field"><span>Account number</span><input class="field-readonly" formControlName="accountNumber" type="text" readonly /></label>
+          <label class="form-field form-field--wide"><span>Shipper / account name <b>*</b></span><input formControlName="accountName" type="text" placeholder="Business or account name" autocomplete="organization" /><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.accountName)">Enter the shipper or account name.</small></label>
+          <label class="form-field"><span>Contact person <b>*</b></span><input formControlName="contactPerson" type="text" placeholder="Full name" autocomplete="name" /><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.contactPerson)">Enter a contact name.</small></label>
+          <label class="form-field"><span>Phone <b>*</b></span><input formControlName="phone" type="tel" placeholder="Phone number" autocomplete="tel" /><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.phone)">Enter a phone number.</small></label>
+          <label class="form-field form-field--wide"><span>Address line 1 <b>*</b></span><input formControlName="addressLine1" type="text" placeholder="Building, street name" autocomplete="address-line1" /><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.addressLine1)">Enter the pickup address.</small></label>
+          <label class="form-field form-field--wide"><span>Address line 2 <em>Optional</em></span><input formControlName="addressLine2" type="text" placeholder="Area or additional directions" autocomplete="address-line2" /></label>
+          <label class="form-field form-field--wide"><span>Address line 3 <em>Optional</em></span><input formControlName="addressLine3" type="text" placeholder="Additional address details" /></label>
+          <label class="form-field"><span>Origin city <b>*</b></span><select formControlName="city" [attr.aria-busy]="citiesLoading()"><option value="" disabled>{{ citiesLoading() ? 'Loading cities…' : cities().length ? 'Select origin city' : 'No cities available' }}</option>@for (city of cities(); track city.cl_CodeID) {<option [value]="city.cl_CodeID">{{ city.cl_CodeName }}</option>}</select><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.city)">Select an origin city.</small></label>
+          <label class="form-field"><span>Mobile number</span><input formControlName="mobile" type="tel" placeholder="Mobile number" autocomplete="tel-national" /></label>
+          <label class="form-field"><span>Email <em>Optional</em></span><input formControlName="email" type="email" placeholder="name@example.com" autocomplete="email" /><small class="field-error" [class.field-error--visible]="controlInvalid(senderForm.controls.email)">Enter a valid email address.</small></label>
+        </div>
+        @if (accountDetailsLoading()) {<p class="field-api-status" role="status">Loading your account details…</p>}
+        @if (accountDetailsError()) {<p class="field-api-error form-api-error" role="alert">{{ accountDetailsError() }}</p>}
+        @if (citiesError()) {<p class="field-api-error form-api-error" role="alert">{{ citiesError() }}</p>}
+
+        @if (submitError()) {<p class="field-api-error form-api-error" role="alert">{{ submitError() }}</p>}
+        <footer class="form-panel__footer"><span><i class="fa-solid fa-lock" aria-hidden="true"></i> Your account information stays private.</span><button class="primary-button" type="button" (click)="nextStep()">Next: consignee <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></footer>
+      </section>
+    }
+
+    @if (activeStep() === 2) {
+      <section class="form-panel" aria-labelledby="consignee-title">
+        <div class="form-panel__heading">
+          <span class="form-panel__icon form-panel__icon--orange"><i class="fa-solid fa-location-dot" aria-hidden="true"></i></span>
+          <div><span class="form-panel__eyebrow">STEP 02</span><h2 id="consignee-title">Consignee details</h2><p>Who will receive this shipment?</p></div>
+        </div>
+
+        <div class="field-grid" [formGroup]="recipientForm">
+          <div class="form-field form-field--wide"><span>Customer account code</span><input class="field-readonly" [value]="accountNumber" type="text" readonly /></div>
+          <label class="form-field form-field--wide"><span>Consignee name / company <b>*</b></span><input formControlName="companyName" type="text" placeholder="Person or company receiving the shipment" autocomplete="organization" /><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.companyName)">Enter a consignee name.</small></label>
+          <label class="form-field"><span>Contact person <b>*</b></span><input formControlName="contactPerson" type="text" placeholder="Full name" autocomplete="name" /><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.contactPerson)">Enter a contact name.</small></label>
+          <label class="form-field"><span>Phone <b>*</b></span><input formControlName="phone" type="tel" placeholder="Phone number" autocomplete="tel" /><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.phone)">Enter a phone number.</small></label>
+          <label class="form-field form-field--wide"><span>Delivery address 1 <b>*</b></span><input formControlName="addressLine1" type="text" placeholder="Building, street name" autocomplete="shipping address-line1" /><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.addressLine1)">Enter the delivery address.</small></label>
+          <label class="form-field form-field--wide"><span>Delivery address 2 <em>Optional</em></span><input formControlName="addressLine2" type="text" placeholder="Area or additional directions" autocomplete="shipping address-line2" /></label>
+          <label class="form-field form-field--wide"><span>Delivery address 3 <em>Optional</em></span><input formControlName="addressLine3" type="text" placeholder="Additional address details" /></label>
+          <label class="form-field"><span>Destination city <b>*</b></span><select formControlName="city" [attr.aria-busy]="citiesLoading()"><option value="" disabled>{{ citiesLoading() ? 'Loading cities…' : cities().length ? 'Select destination city' : 'No cities available' }}</option>@for (city of cities(); track city.cl_CodeID) {<option [value]="city.cl_CodeID">{{ city.cl_CodeName }}</option>}</select><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.city)">Select a destination city.</small></label>
+          <label class="form-field"><span>Mobile number</span><input formControlName="mobile" type="tel" placeholder="Mobile number" autocomplete="tel-national" /></label>
+          <label class="form-field"><span>Email <em>Optional</em></span><input formControlName="email" type="email" placeholder="name@example.com" autocomplete="email" /><small class="field-error" [class.field-error--visible]="controlInvalid(recipientForm.controls.email)">Enter a valid email address.</small></label>
+        </div>
+        @if (citiesError()) {<p class="field-api-error form-api-error" role="alert">{{ citiesError() }}</p>}
+        @if (submitError()) {<p class="field-api-error form-api-error" role="alert">{{ submitError() }}</p>}
+
+        <footer class="form-panel__footer"><button class="secondary-button" type="button" (click)="previousStep()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button><button class="primary-button" type="button" (click)="nextStep()">Next: shipment details <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button></footer>
+      </section>
+    }
+
+    @if (activeStep() === 3) {
+      <section class="form-panel form-panel--shipment" aria-labelledby="shipment-title">
+        <div class="form-panel__heading">
+          <span class="form-panel__icon"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
+          <div><span class="form-panel__eyebrow">STEP 03</span><h2 id="shipment-title">Shipment details</h2><p>Choose the service and enter the details for each package.</p></div>
+        </div>
+
+        <div class="field-grid field-grid--details" [formGroup]="detailsForm">
+          <label class="form-field"><span>Billing date</span><input class="field-readonly" formControlName="billingDate" type="date" readonly /></label>
+          <label class="form-field"><span>Shipper reference</span><input formControlName="shipperReference" type="text" placeholder="Your internal reference" /></label>
+          <label class="form-field"><span>Product type <b>*</b></span><select formControlName="productType" [attr.aria-busy]="productsLoading()"><option value="" disabled>{{ productsLoading() ? 'Loading product types…' : productTypes().length ? 'Select product type' : 'No product types available' }}</option>@for (product of productTypes(); track product.cl_CodeID) {<option [value]="product.cl_CodeID">{{ product.cl_CodeName }}</option>}</select><small class="field-error" [class.field-error--visible]="controlInvalid(detailsForm.controls.productType)">Select a product type.</small>@if (productError()) {<small class="field-api-error" role="alert">{{ productError() }}</small>}</label>
+          <label class="form-field"><span>Service level <b>*</b></span><select formControlName="serviceLevel" [attr.aria-busy]="servicesLoading()"><option value="" disabled>{{ servicesLoading() ? 'Loading service types…' : serviceTypes().length ? 'Select service level' : 'No service types available' }}</option>@for (service of serviceTypes(); track service.cl_CodeID) {<option [value]="service.cl_CodeID">{{ service.cl_CodeName }}</option>}</select><small class="field-error" [class.field-error--visible]="controlInvalid(detailsForm.controls.serviceLevel)">Select a service level.</small>@if (serviceError()) {<small class="field-api-error" role="alert">{{ serviceError() }}</small>}</label>
+          <label class="form-field"><span>Total pieces count (pcs) <b>*</b></span><input formControlName="totalPiecesCount" type="number" min="1" step="1" (input)="syncPackageRows()" (blur)="ensureMinimumPieces()" /><small class="field-error" [class.field-error--visible]="controlInvalid(detailsForm.controls.totalPiecesCount)">Enter a whole number of at least one piece.</small></label>
+          <label class="form-field"><span>Actual weight (kg)</span><input class="field-readonly" [value]="formatWeight(totalActualWeight())" type="text" readonly /></label>
+          <label class="form-field"><span>Volumetric weight (kg)</span><input class="field-readonly" [value]="formatWeight(totalVolumetricWeight())" type="text" readonly /></label>
+          <label class="form-field"><span>Chargeable weight (kg)</span><input class="field-readonly field-readonly--total" [value]="formatWeight(totalChargeableWeight())" type="text" readonly /></label>
+          <label class="form-field"><span>COD cash to collect (EGP)</span><input formControlName="cashToCollect" type="number" min="0" step="0.01" placeholder="0.00" /><small class="field-error" [class.field-error--visible]="controlInvalid(detailsForm.controls.cashToCollect)">Enter zero or a positive amount.</small></label>
+          <label class="form-field"><span>Print format output <b>*</b></span><select formControlName="printFormat"><option value="" disabled>Select print format</option>@for (format of printFormats; track format.report) {<option [value]="format.report">{{ format.label }}</option>}</select><small class="field-error" [class.field-error--visible]="controlInvalid(detailsForm.controls.printFormat)">Choose a print format.</small></label>
+          <label class="form-field form-field--wide"><span>Goods description</span><input formControlName="goodsDescription" type="text" placeholder="Briefly describe the shipment contents" /></label>
+        </div>
+
+        <section class="pieces-section" aria-labelledby="pieces-title">
+          <div class="pieces-section__heading">
+            <div><span class="form-panel__eyebrow">PACKAGE BREAKDOWN</span><h3 id="pieces-title">Package details</h3><p>One details row is shown for each piece.</p></div>
+            <span class="pieces-count"><i class="fa-solid fa-cubes-stacked" aria-hidden="true"></i> {{ packageRows.length }} {{ packageRows.length === 1 ? 'piece' : 'pieces' }}</span>
+          </div>
+
+          <div class="package-rows" formArrayName="packageRows">
+            @for (packageRow of packageRows.controls; track $index; let index = $index) {
+              <article class="package-row" [formGroupName]="index">
+                <div class="package-row__title"><span class="package-row__number">{{ index + 1 }}</span><div><strong>Piece {{ index + 1 }}</strong><small>Dimensions in cm · Weight in kg</small></div></div>
+                <div class="package-row__fields">
+                  <label class="form-field package-row__description"><span>Description</span><input formControlName="description" type="text" [placeholder]="'Package description #' + (index + 1)" /></label>
+                  <label class="form-field"><span>Length (cm) <b>*</b></span><input formControlName="length" type="number" min="0.1" step="0.1" placeholder="0" /><small class="field-error" [class.field-error--visible]="controlInvalid(packageRow.controls.length)">Enter a value above zero.</small></label>
+                  <label class="form-field"><span>Width (cm) <b>*</b></span><input formControlName="width" type="number" min="0.1" step="0.1" placeholder="0" /><small class="field-error" [class.field-error--visible]="controlInvalid(packageRow.controls.width)">Enter a value above zero.</small></label>
+                  <label class="form-field"><span>Height (cm) <b>*</b></span><input formControlName="height" type="number" min="0.1" step="0.1" placeholder="0" /><small class="field-error" [class.field-error--visible]="controlInvalid(packageRow.controls.height)">Enter a value above zero.</small></label>
+                  <label class="form-field"><span>Actual weight (kg) <b>*</b></span><input formControlName="actualWeight" type="number" min="0.01" step="0.01" placeholder="0.00" /><small class="field-error" [class.field-error--visible]="controlInvalid(packageRow.controls.actualWeight)">Enter a weight above zero.</small></label>
+                  <label class="form-field"><span>Volumetric weight (kg)</span><input class="field-readonly" [value]="formatWeight(packageWeightRows()[$index]?.volumetricWeight ?? 0)" type="text" readonly /></label>
+                </div>
+              </article>
+            }
+          </div>
+        </section>
+
+        @if (submitError()) {<p class="field-api-error form-api-error" role="alert">{{ submitError() }}</p>}
+        <footer class="form-panel__footer form-panel__footer--last"><button class="secondary-button" type="button" (click)="previousStep()" [disabled]="isSubmitting()"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back</button><span class="submit-note">{{ isSubmitting() ? 'Creating and printing AWB…' : customerState.shipmentRemaining() <= 0 ? 'No active package has shipments available.' : 'Review the shipment details before submitting.' }}</span><button class="primary-button" type="button" [disabled]="isSubmitting() || customerState.shipmentRemaining() <= 0" (click)="createShipment()">@if (isSubmitting()) {<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Processing…} @else if (customerState.shipmentRemaining() <= 0) {<i class="fa-solid fa-lock" aria-hidden="true"></i> Shipment unavailable} @else {Create &amp; print AWB <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>}</button></footer>
+      </section>
+    }
+  </form>
+</main>
+
+@if (successAwb(); as awbNumber) {
+  <div class="awb-success-backdrop">
+    <section class="awb-success-dialog" [class.awb-success-dialog--with-report]="!!reportDocument()" role="dialog" aria-modal="true" aria-labelledby="awb-success-title">
+      <span class="awb-success-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+      <span class="page-kicker">SHIPMENT CREATED</span>
+      <h2 id="awb-success-title">Your shipment is ready</h2>
+      <p>The airway bill number returned by the carrier is:</p>
+      <strong class="awb-success-number">{{ awbNumber }}</strong>
+      @if (reportDocument(); as reportUrl) {
+        <iframe class="awb-report-preview" [src]="reportUrl" title="Shipment airway bill PDF"></iframe>
+        <button class="secondary-button awb-report-open" type="button" (click)="openReportDocument()"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i> Open / print AWB</button>
+      }
+      @if (printError()) {<p class="awb-print-error" role="alert">{{ printError() }}</p>}
+      <button class="primary-button" type="button" (click)="closeSuccessDialog()">Done</button>
+    </section>
+  </div>
+}

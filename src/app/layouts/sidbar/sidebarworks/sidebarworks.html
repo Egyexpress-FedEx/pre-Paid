@@ -1,0 +1,65 @@
+<aside id="customer-sidebar" class="customer-sidebar" aria-label="Customer portal navigation">
+  <section class="customer-sidebar__limit" [class.customer-sidebar__limit--exhausted]="!customerState.isVisitor() && customerState.shipmentRemaining() <= 0" aria-label="Shipment limit">
+    <div class="customer-sidebar__limit-heading">
+      <span class="customer-sidebar__limit-icon" aria-hidden="true"><i class="fa-solid fa-box"></i></span>
+      <span class="customer-sidebar__limit-label">Shipment limit</span>
+    </div>
+
+    <div class="customer-sidebar__limit-value">
+      @if (customerState.isVisitor()) {
+        <strong>—</strong>
+        <span>No shipment limit</span>
+      } @else {
+        <strong>{{ customerState.usedShipments() }}</strong>
+        <span>/ {{ customerState.shipmentLimit() }} shipments</span>
+      }
+    </div>
+
+    <div
+      class="customer-sidebar__progress"
+      role="progressbar"
+      aria-label="Shipment package usage"
+      aria-valuemin="0"
+      [attr.aria-valuemax]="customerState.shipmentLimit() || 1"
+      [attr.aria-valuenow]="customerState.usedShipments()">
+      <span [style.width.%]="customerState.shipmentProgress()"></span>
+    </div>
+
+    @if (customerState.isVisitor()) {
+      <p class="customer-sidebar__remaining">No shipment limit is available for this account</p>
+    } @else if (customerState.shipmentRemaining() <= 0) {
+      <div class="customer-sidebar__limit-alert" role="status">
+        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+        <span><strong>No active shipments available</strong><small>Shipment creation is locked.</small></span>
+      </div>
+    } @else {
+      <p class="customer-sidebar__remaining">{{ customerState.shipmentRemaining() }} shipments remaining</p>
+    }
+  </section>
+
+  <div class="customer-sidebar__divider" aria-hidden="true"></div>
+  <p class="customer-sidebar__section-label">WORKSPACE</p>
+
+  <nav class="customer-sidebar__nav">
+    @for (item of navigationItems(); track item.route) {
+      @if (!customerState.isVisitor() && item.route === '/customer/create-shipment' && customerState.shipmentRemaining() <= 0) {
+        <div class="customer-sidebar__link customer-sidebar__link--disabled" aria-disabled="true" title="No active package has shipments available">
+          <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
+          <span>{{ item.label }}<small>Limit reached</small></span>
+          <i class="fa-solid fa-lock customer-sidebar__lock" aria-hidden="true"></i>
+        </div>
+      } @else {
+        <a
+          class="customer-sidebar__link"
+          [routerLink]="item.route"
+          routerLinkActive="customer-sidebar__link--active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+          [attr.aria-current]="item.exact ? 'page' : null"
+          (click)="navigationSelected.emit()">
+          <i [class]="'fa-solid ' + item.icon" aria-hidden="true"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    }
+  </nav>
+</aside>

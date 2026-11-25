@@ -1,0 +1,39 @@
+<app-admin-sidebar></app-admin-sidebar><main class="admin-list-page">
+  <header class="list-header"><div><a routerLink="/adminDashboard" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to overview</a><span class="page-kicker">CUSTOMER MANAGEMENT</span><h1>Customers</h1><p>Add and manage customers eligible for prepaid packages.</p></div><button class="primary-button" type="button" (click)="showForm.set(!showForm())"><i class="fa-solid fa-plus"></i> Add customer</button></header>
+
+  @if (showForm()) {<section class="form-panel"><div><span class="page-kicker">NEW CUSTOMER</span><h2>Add customer account</h2><p>The account number will be available when creating a package.</p></div><div class="form-grid"><label><span>Account number</span><input [ngModel]="accountNumber()" (ngModelChange)="accountNumber.set($event)" type="text" placeholder="e.g. EGX-100300" /></label><div class="form-actions"><button class="secondary-button" type="button" (click)="showForm.set(false)">Cancel</button><button class="primary-button" type="button" (click)="addCustomer()">Save customer</button></div></div></section>}
+
+  <section class="list-panel">
+    <div class="list-toolbar">
+      <div class="list-toolbar__heading">
+        <h2>Customer accounts</h2>
+        <span>Showing {{ filteredCustomers().length }} of {{ data.customers().length }} accounts</span>
+      </div>
+      <div class="customer-toolbar-controls">
+        <div class="customer-date-filters" aria-label="Filter customers by added date">
+          <label><span>From</span><input [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" type="date" aria-label="Added from date" /></label>
+          <label><span>To</span><input [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" type="date" aria-label="Added to date" /></label>
+          <button class="clear-date-filter" type="button" aria-label="Clear date filter" title="Clear date filter" [disabled]="!dateFrom() && !dateTo()" (click)="clearDateFilter()"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></button>
+        </div>
+        <label class="list-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" type="search" placeholder="Search by account number" /></label>
+        <button class="excel-export-button" type="button" [disabled]="isDateRangeInvalid() || filteredCustomers().length === 0" (click)="exportCustomers()"><i class="fa-solid fa-file-excel" aria-hidden="true"></i> Export Excel</button>
+      </div>
+    </div>
+    @if (isDateRangeInvalid()) {
+      <p class="date-range-error" role="alert"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> The start date must be on or before the end date.</p>
+    }
+    <div class="responsive-table"><table><thead><tr><th>Account number</th><th>Status</th><th>Added</th><th class="text-end">Action</th></tr></thead><tbody>@for (customer of filteredCustomers(); track customer.id) {<tr><td><div class="person"><span><i class="fa-solid fa-hashtag"></i></span><strong>{{ customer.accountNumber }}</strong></div></td><td><span class="status" [class.status--off]="!customer.isActive"><i class="fa-solid fa-circle"></i>{{ customer.isActive ? 'Active' : 'Inactive' }}</span></td><td>{{ formatDate(customer.createdAt) }}</td><td class="text-end"><div class="table-actions"><button class="table-action" [class.table-action--activate]="!customer.isActive" type="button" (click)="data.toggleCustomer(customer.id)"><i class="fa-solid" [class.fa-toggle-on]="customer.isActive" [class.fa-toggle-off]="!customer.isActive"></i>{{ customer.isActive ? 'Disable' : 'Activate' }}</button><button class="delete-action" type="button" aria-label="Delete account" title="Delete account" (click)="requestDelete(customer.id, customer.accountNumber)"><i class="fa-regular fa-trash-can"></i></button></div></td></tr>} @empty {<tr><td class="empty" colspan="4">No customers found.</td></tr>}</tbody></table></div>
+  </section>
+</main>
+
+@if (pendingDelete(); as account) {
+  <div class="delete-modal-backdrop" role="presentation" (click)="pendingDelete.set(null)">
+    <section class="delete-modal" role="alertdialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()">
+      <div class="delete-modal__icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></div>
+      <h2 id="delete-title">Delete account?</h2>
+      <p>Are you sure you want to delete account <strong>{{ account.accountNumber }}</strong>?</p>
+      <div class="delete-modal__warning"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>Deleting this account will also remove all packages linked to it.</span></div>
+      <div class="delete-modal__actions"><button class="secondary-button" type="button" (click)="pendingDelete.set(null)">Cancel</button><button class="danger-button" type="button" (click)="confirmDelete()">Delete account</button></div>
+    </section>
+  </div>
+}

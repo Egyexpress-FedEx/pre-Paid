@@ -1,0 +1,86 @@
+<main class="admin-shell">
+  <div class="sidebar-backdrop" [class.sidebar-backdrop--visible]="sidebarOpen()" (click)="toggleSidebar()"></div>
+
+  <aside class="admin-sidebar" [class.admin-sidebar--open]="sidebarOpen()">
+    <div class="brand-lockup">
+      <div class="brand-lockup__mark"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></div>
+      <span>Egypt <strong>Express</strong></span>
+    </div>
+
+    <div class="sidebar-label">Main menu</div>
+    <nav class="sidebar-nav" aria-label="Admin navigation">
+      <a class="sidebar-nav__item" routerLink="/adminDashboard" routerLinkActive="sidebar-nav__item--active" [routerLinkActiveOptions]="{ exact: true }">
+        <i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Overview</span>
+      </a>
+      <a class="sidebar-nav__item" routerLink="/admCustomer" routerLinkActive="sidebar-nav__item--active">
+        <i class="fa-solid fa-users" aria-hidden="true"></i><span>Customers</span>
+      </a>
+      <a class="sidebar-nav__item" routerLink="/admpackages" routerLinkActive="sidebar-nav__item--active">
+        <i class="fa-solid fa-box-open" aria-hidden="true"></i><span>Packages</span>
+      </a>
+      <a class="sidebar-nav__item" routerLink="/adminActivity" routerLinkActive="sidebar-nav__item--active">
+        <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Activity log</span>
+      </a>
+      <a class="sidebar-nav__item" routerLink="/adminAlerts" routerLinkActive="sidebar-nav__item--active">
+        <i class="fa-solid fa-bell" aria-hidden="true"></i><span>Alerts</span>@if (accountUserStatus.alertCount() > 0) {<b class="sidebar-nav__badge">{{ accountUserStatus.alertCount() > 99 ? '99+' : accountUserStatus.alertCount() }}</b>}
+      </a>
+    </nav>
+
+    <div class="sidebar-help">
+      <div class="sidebar-help__icon"><i class="fa-regular fa-circle-question" aria-hidden="true"></i></div>
+      <strong>Need help?</strong>
+      <span>Contact the Developer team</span>
+      <!-- <a href="mailto:developers@egypt-express.com">Get support <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a> -->
+    </div>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user__avatar">S</div>
+      <div><strong>Sami Developer</strong><span>Administrator</span></div>
+      <button class="sidebar-user__menu" type="button" aria-label="Logout" title="Logout" (click)="logout()"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i><span>Logout</span></button>
+    </div>
+  </aside>
+
+  <section class="admin-content">
+    <header class="admin-header">
+      <button class="mobile-menu" type="button" aria-label="Open navigation" (click)="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+      <div class="header-title"><span>Admin portal</span><h1>Good morning, Sami <span></span></h1></div>
+      <div class="header-actions">
+        <label class="header-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" type="search" placeholder="Search by account number..." /></label>
+        <app-shipment-audit-notifications />
+      </div>
+    </header>
+
+    <div class="admin-body">
+      <div class="page-heading">
+        <div><h2>Overview</h2><p>Here’s what’s happening with your prepaid customers today.</p></div>
+        <div class="heading-actions">
+          <button class="primary-button" type="button" data-bs-toggle="modal" data-bs-target="#addPackageModal"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add package</button>
+        </div>
+      </div>
+
+      <section class="stats-grid" aria-label="Dashboard summary">
+        <article class="stat-card"><div class="stat-card__top"><span>Total customers</span><i class="fa-solid fa-users"></i></div><strong>{{ totalCustomers() }}</strong><small>Accounts in selected period</small></article>
+        <article class="stat-card"><div class="stat-card__top"><span>Active packages</span><i class="fa-solid fa-bolt"></i></div><strong>{{ activeCustomers() }}</strong><small>Currently enabled</small></article>
+        <article class="stat-card"><div class="stat-card__top"><span>Inactive customers</span><i class="fa-solid fa-user-slash"></i></div><strong>{{ inactiveCustomers() }}</strong><small>Currently disabled</small></article>
+        <article class="stat-card stat-card--accent"><div class="stat-card__top"><span>Total packages created</span><i class="fa-solid fa-box-open"></i></div><strong>{{ totalPackages() }}</strong><small>Packages in selected period</small></article>
+      </section>
+
+      <section class="panel customers-panel" id="customers">
+        <div class="panel-heading"><div><h3>Latest packages</h3><p>Showing the latest 20 packages created.</p></div><a class="text-button" routerLink="/admpackages">View all <i class="fa-solid fa-arrow-right"></i></a></div>
+        <div class="table-wrap"><table><thead><tr><th>Account number</th><th>Package usage</th><th>Status</th><th>Created</th><th class="text-end">Action</th></tr></thead><tbody>@for (customerPackage of filteredPackages(); track customerPackage.id) {<tr><td><div class="customer-cell"><div class="customer-avatar"><i class="fa-solid fa-hashtag"></i></div><div><button class="customer-package-link" type="button" (click)="openPackageBills(customerPackage.id, customerPackage.accountNumber)"><strong>{{ customerPackage.accountNumber }}</strong></button></div></div></td><td><div class="usage-cell"><div class="usage-label"><span>{{ customerPackage.usedShipments }} of {{ customerPackage.shipmentLimit }} shipments</span><b>{{ progress(customerPackage.shipmentLimit, customerPackage.usedShipments) }}%</b></div><div class="progress-track"><span [style.width.%]="progress(customerPackage.shipmentLimit, customerPackage.usedShipments)" [class.progress-track__complete]="isCompleted(customerPackage.shipmentLimit, customerPackage.usedShipments)"></span></div><small>{{ isCompleted(customerPackage.shipmentLimit, customerPackage.usedShipments) ? 'Limit reached' : remaining(customerPackage.shipmentLimit, customerPackage.usedShipments) + ' remaining' }}</small></div></td><td><span class="status-pill" [class.status-pill--inactive]="!customerPackage.isActive || isCompleted(customerPackage.shipmentLimit, customerPackage.usedShipments)"><i class="fa-solid fa-circle"></i>{{ isCompleted(customerPackage.shipmentLimit, customerPackage.usedShipments) ? 'Closed' : (customerPackage.isActive ? 'Active' : 'Inactive') }}</span></td><td class="date-cell">{{ formatDate(customerPackage.createdAt) }}</td><td class="text-end"><button class="action-button" type="button" (click)="openPackageBills(customerPackage.id, customerPackage.accountNumber)"><i class="fa-solid fa-receipt"></i> View bills</button> <a class="action-button" routerLink="/admpackages"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a></td></tr>} @empty {<tr><td colspan="5" class="empty-state">No packages found.</td></tr>}</tbody></table></div>
+      </section>
+    </div>
+  </section>
+</main>
+
+@if (selectedPackage(); as selected) {
+  <app-package-bills-dialog
+    [isOpen]="true"
+    [packageTitle]="selected.title"
+    [bills]="shipmentBills()"
+    (closed)="closePackageBills()" />
+}
+<div class="modal fade" id="addPackageModal" tabindex="-1" aria-labelledby="addPackageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content package-modal"><div class="modal-header"><div><span class="login-card__kicker">PACKAGE ALLOWANCE</span><h3 id="addPackageModalLabel">Add shipment allowance</h3></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div><div class="modal-body"><p>If the customer has an active package with shipments remaining, this limit will be added to the oldest open package. If all packages are full or closed, a new package will be created and shown separately. The total counts open packages only.</p><label class="modal-field"><span>Account number</span><select [ngModel]="selectedCustomerId()" (ngModelChange)="selectedCustomerId.set($event ? +$event : null)"><option [ngValue]="null">Select account number</option>@for (customer of data.customers(); track customer.id) {<option [ngValue]="customer.id">{{ customer.accountNumber }}</option>}</select></label><label class="modal-field"><span>Shipment limit</span><input [ngModel]="shipmentLimit()" (ngModelChange)="shipmentLimit.set(+$event)" type="number" min="1" step="1" /></label></div><div class="modal-footer"><a class="secondary-button" routerLink="/admCustomer" data-bs-dismiss="modal">Add customer</a><button type="button" class="primary-button" data-bs-dismiss="modal" (click)="addPackage()">Apply shipment limit <i class="fa-solid fa-arrow-right"></i></button></div></div></div>
+</div>
+

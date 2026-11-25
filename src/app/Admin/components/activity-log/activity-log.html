@@ -1,0 +1,117 @@
+<app-admin-sidebar />
+
+<main class="activity-page">
+  <header class="activity-page__header">
+    <div>
+      <span class="activity-page__eyebrow">ADMINISTRATION</span>
+      <h1>Activity log</h1>
+      <p>See shipment reviews and package updates for your customer accounts.</p>
+    </div>
+    <button class="activity-refresh" type="button" [disabled]="audit.isChecking()" (click)="runAudit()">
+      <i class="fa-solid" [class.fa-rotate]="!audit.isChecking()" [class.fa-spinner]="audit.isChecking()" [class.fa-spin]="audit.isChecking()" aria-hidden="true"></i>
+      {{ audit.isChecking() ? 'Reviewing accounts…' : 'Review all accounts' }}
+    </button>
+  </header>
+
+  <section class="activity-summary" aria-label="Audit summary">
+    <article><span>Recorded events</span><strong>{{ activityRows().length }}</strong><i class="fa-solid fa-list-check" aria-hidden="true"></i></article>
+    <article><span>Shipments added automatically</span><strong>{{ automaticAssignmentCount() }}</strong><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i></article>
+    <article><span>Awaiting review</span><strong>{{ audit.pendingCount() }}</strong><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></article>
+  </section>
+
+  <section class="activity-panel" aria-labelledby="activity-list-title">
+    <div class="activity-panel__heading">
+      <div>
+        <h2 id="activity-list-title">Activity history</h2>
+        @if (audit.lastCheckedAt()) {
+          <p>Last checked {{ formatTimestamp(audit.lastCheckedAt()) }}</p>
+        } @else {
+          <p>Shipment reviews and administrator updates are listed here.</p>
+        }
+      </div>
+      <label class="activity-search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" type="search" placeholder="Search account or shipment bill" aria-label="Search activity by account or shipment bill number" />
+      </label>
+    </div>
+
+    @if (audit.checkErrors().length > 0) {
+      <div class="activity-errors" role="status">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <span>{{ audit.checkErrors().length }} account(s) could not be reviewed. Open the Overview notifications for more information.</span>
+      </div>
+    }
+
+    <div class="activity-table-wrap">
+      <table class="activity-table">
+        <thead>
+          <tr><th>Event</th><th>Account</th><th>Shipment bill</th><th>Package</th><th>When</th><th>Result</th></tr>
+        </thead>
+        <tbody>
+          @for (entry of filteredRows(); track entry.id) {
+            <tr class="activity-row" tabindex="0" [attr.aria-label]="'Open details for ' + entry.title + ', shipment bill ' + entry.awbNumber" (click)="openDetails(entry)" (keydown.enter)="openDetails(entry)">
+              <td>
+                <div class="activity-event">
+                  <strong>{{ entry.title }}</strong>
+                  <small>{{ entry.source }}@if (entry.note) { · {{ entry.note }}}</small>
+                </div>
+              </td>
+              <td><span class="activity-mono">{{ entry.accountNumber }}</span></td>
+              <td><span class="activity-awb">{{ entry.awbNumber }}</span></td>
+              <td>{{ entry.packageId ? '#' + entry.packageId : '—' }}</td>
+              <td class="activity-time">{{ formatTimestamp(entry.eventAt) }}</td>
+              <td><span class="activity-status" [class.activity-status--warning]="entry.tone === 'warning'" [class.activity-status--success]="entry.tone === 'success'" [class.activity-status--neutral]="entry.tone === 'neutral'">{{ entry.status }}</span></td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6">
+              <div class="activity-empty">
+                <i class="fa-regular fa-clipboard" aria-hidden="true"></i>
+                @if (searchTerm().trim()) {
+                  <strong>No matching activity</strong>
+                  <span>Try another account number or shipment bill number.</span>
+                } @else {
+                  <strong>No activity yet</strong>
+                  <span>Updates appear after shipment reviews or administrator changes.</span>
+                }
+              </div>
+            </td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+@if (selectedRow(); as selected) {
+  <div class="activity-detail-backdrop" role="presentation" (click)="closeDetails()">
+    <section
+      class="activity-detail-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="activity-detail-title"
+      (click)="$event.stopPropagation()">
+      <header class="activity-detail-dialog__header">
+        <span class="activity-detail-dialog__icon" aria-hidden="true"><i class="fa-solid fa-clock-rotate-left"></i></span>
+        <button class="activity-detail-dialog__close" type="button" aria-label="Close activity details" (click)="closeDetails()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+        <span class="activity-page__eyebrow">ACTIVITY DETAILS</span>
+        <h2 id="activity-detail-title">{{ selected.title }}</h2>
+        <p>{{ selected.source }} · {{ selected.status }}</p>
+      </header>
+
+      <dl class="activity-detail-list">
+        @for (detail of selectedDetails(); track detail.label) {
+          <div class="activity-detail-list__item" [class.activity-detail-list__item--wide]="detail.label === 'What happened' || detail.label === 'Event' || detail.label === 'Administrator note'">
+            <dt>{{ detail.label }}</dt>
+            <dd>{{ detail.value }}</dd>
+          </div>
+        }
+      </dl>
+
+      <footer class="activity-detail-dialog__footer">
+        <button type="button" (click)="closeDetails()">Done</button>
+      </footer>
+    </section>
+  </div>
+}

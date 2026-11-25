@@ -1,0 +1,102 @@
+<app-admin-sidebar />
+
+<main class="alerts-page">
+  <header class="alerts-header">
+    <div>
+      <span class="alerts-eyebrow">ADMINISTRATION</span>
+      <h1>Alerts</h1>
+      <p>Only accounts whose user access does not match their available packages appear here.</p>
+    </div>
+    <div class="alerts-header__actions">
+      <button class="alerts-button alerts-button--quiet" type="button" [disabled]="anyBusy() || accountStatus.alertCount() === 0" (click)="checkAll()">
+        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Check again
+      </button>
+      <button class="alerts-button" type="button" [disabled]="anyBusy() || accountStatus.alertCount() === 0" (click)="retryAll()">
+        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Retry updates
+      </button>
+    </div>
+  </header>
+
+  <section class="alerts-summary" aria-label="Accounts requiring attention">
+    <div class="alerts-summary__icon"><i class="fa-solid fa-bell" aria-hidden="true"></i></div>
+    <div><span>Accounts needing attention</span><strong>{{ accountStatus.alertCount() }}</strong></div>
+    <p>Accounts disappear from this list as soon as all their users have the expected status.</p>
+  </section>
+
+  <section class="alerts-panel" aria-labelledby="alerts-list-title">
+    <div class="alerts-panel__heading">
+      <div>
+        <h2 id="alerts-list-title">Account access checks</h2>
+        <p>{{ filteredAlerts().length }} account{{ filteredAlerts().length === 1 ? '' : 's' }} to review</p>
+      </div>
+      <label class="alerts-search">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        <input [ngModel]="searchTerm()" (ngModelChange)="setSearchTerm($event)" type="search" placeholder="Search account number" aria-label="Search alerts by account number" />
+      </label>
+    </div>
+
+    <div class="alerts-table-wrap">
+      <table class="alerts-table">
+        <thead>
+          <tr><th>Account number</th><th>Expected access</th><th>What needs attention</th><th>Last checked</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          @for (alert of visibleAlerts(); track alert.accountNumber) {
+            <tr>
+              <td><strong class="alerts-account">{{ alert.accountNumber }}</strong></td>
+              <td>
+                <span class="alerts-status" [class.alerts-status--active]="alert.requestedStatus === 'active'">
+                  <i class="fa-solid" [class.fa-circle-check]="alert.requestedStatus === 'active'" [class.fa-lock]="alert.requestedStatus === 'inactive'" aria-hidden="true"></i>
+                  {{ alert.requestedStatus === 'active' ? 'Users should be active' : 'Users should be inactive' }}
+                </span>
+              </td>
+              <td>
+                <div class="alerts-message">
+                  <strong>{{ alert.message }}</strong>
+                  @if (alert.totalUserCount !== null) {
+                    <small>{{ alert.activeUserCount }} of {{ alert.totalUserCount }} users are currently active</small>
+                  }
+                </div>
+              </td>
+              <td class="alerts-time">{{ formatTimestamp(alert.lastCheckedAt) }}</td>
+              <td>
+                <div class="alerts-row-actions">
+                  <button type="button" class="alerts-row-action" [disabled]="accountStatus.isBusy(alert.accountNumber)" (click)="verify(alert)">
+                    {{ accountStatus.isBusy(alert.accountNumber) ? 'Checking…' : 'Verify' }}
+                  </button>
+                  <button type="button" class="alerts-row-action alerts-row-action--primary" [disabled]="accountStatus.isBusy(alert.accountNumber)" (click)="retry(alert)">
+                    Retry update
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5">
+              <div class="alerts-empty">
+                <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+                @if (searchTerm().trim()) {
+                  <strong>No matching accounts</strong>
+                  <small>Try another account number.</small>
+                } @else {
+                  <strong>No accounts need attention</strong>
+                  <small>All checked account users match their package access.</small>
+                }
+              </div>
+            </td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (filteredAlerts().length > pageSize) {
+      <footer class="alerts-pagination">
+        <span>Showing {{ (currentPage() - 1) * pageSize + 1 }}–{{ math.min(currentPage() * pageSize, filteredAlerts().length) }} of {{ filteredAlerts().length }}</span>
+        <div>
+          <button type="button" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">Previous</button>
+          <span>Page {{ currentPage() }} of {{ pageCount() }}</span>
+          <button type="button" [disabled]="currentPage() === pageCount()" (click)="goToPage(currentPage() + 1)">Next</button>
+        </div>
+      </footer>
+    }
+  </section>
+</main>

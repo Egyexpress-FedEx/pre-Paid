@@ -1,0 +1,37 @@
+<header class="portal-header">
+  <div class="portal-header__start">
+    <a class="portal-brand" [routerLink]="portalHomeRoute()" aria-label="Egypt Express portal">
+      <img class="portal-brand__logo" src="/images/egy-org-photo-transparent.png" alt="Egypt Express" width="180" height="54" />
+    </a>
+
+    <button
+      class="portal-header__menu-toggle"
+      type="button"
+      [attr.aria-label]="sidebarOpen() ? 'Close sidebar' : 'Open sidebar'"
+      [attr.aria-expanded]="sidebarOpen()"
+      aria-controls="customer-sidebar"
+      (click)="menuToggle.emit()">
+      <i class="fa-solid" [class.fa-bars]="!sidebarOpen()" [class.fa-xmark]="sidebarOpen()" aria-hidden="true"></i>
+      <span>{{ sidebarOpen() ? 'Close' : 'Menu' }}</span>
+    </button>
+  </div>
+
+  <div class="portal-header__account">
+    <div class="portal-header__customer" aria-label="Signed in customer">
+      <span class="portal-header__customer-icon" aria-hidden="true"><i class="fa-regular fa-user"></i></span>
+      <span class="portal-header__customer-name">{{ customerState.customerName() }}</span>
+    </div>
+
+    @if (!customerState.isVisitor()) {
+      <div class="portal-header__usage" aria-label="Combined shipment usage">
+        <i class="fa-solid fa-box" aria-hidden="true"></i>
+        <strong>{{ customerState.shipmentUsage() }}</strong>
+      </div>
+    }
+
+    <button class="portal-header__signout" type="button" (click)="signOut()">
+      <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+      <span>Sign out</span>
+    </button>
+  </div>
+</header>

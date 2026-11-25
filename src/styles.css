@@ -1,1 +1,41 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #ff6b00;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --font-family-base: Arial, Helvetica, sans-serif;
+  --font-weight-regular: 500;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+}
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(dialog:modal, .modal.show, [aria-modal="true"]:not([hidden])),
+body:has(dialog:modal, .modal.show, [aria-modal="true"]:not([hidden])) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+dialog:modal,
+.modal.show,
+[aria-modal="true"]:not([hidden]) {
+  overscroll-behavior: contain;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family-base);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.6;
+  color: var(--color-black);
+  background-color: var(--color-white);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

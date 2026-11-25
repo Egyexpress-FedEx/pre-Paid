@@ -1,0 +1,27 @@
+<div class="customer-layout">
+  <app-headerbar
+    [sidebarOpen]="sidebarOpen()"
+    (menuToggle)="toggleSidebar()">
+  </app-headerbar>
+
+  <div class="customer-layout__body">
+    @if (sidebarOpen()) {
+      <button
+        class="customer-layout__scrim"
+        type="button"
+        aria-label="Close navigation"
+        (click)="closeSidebar()">
+      </button>
+    }
+
+    <app-sidebarworks
+      class="customer-layout__sidebar"
+      [class.customer-layout__sidebar--open]="sidebarOpen()"
+      (navigationSelected)="closeSidebar()">
+    </app-sidebarworks>
+
+    <main class="customer-layout__content" aria-label="Customer portal content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<div class="audit-notifications">
+  <button
+    class="audit-notifications__trigger"
+    type="button"
+    aria-label="Shipment audit notifications"
+    [attr.aria-expanded]="isOpen()"
+    (click)="togglePanel()">
+    <i class="fa-regular fa-bell" aria-hidden="true"></i>
+    @if (audit.pendingCount() > 0) {
+      <span class="audit-notifications__badge">{{ audit.pendingCount() > 99 ? '99+' : audit.pendingCount() }}</span>
+    }
+  </button>
+
+  @if (isOpen()) {
+    <section class="audit-panel" aria-label="Shipment audit notifications">
+      <header class="audit-panel__header">
+        <div>
+          <span class="audit-panel__eyebrow">ACCOUNT RECONCILIATION</span>
+          <h2>Shipment notifications</h2>
+          <p>{{ audit.pendingCount() }} pending review</p>
+        </div>
+        <button class="audit-refresh" type="button" [disabled]="audit.isChecking()" (click)="audit.checkNow()" aria-label="Check shipment accounts again" title="Check now">
+          <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="audit.isChecking()" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      @if (audit.isChecking()) {
+        <p class="audit-panel__status" role="status"><i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Checking customer shipment accounts…</p>
+      }
+      @if (audit.lastCheckedAt()) {
+        <p class="audit-panel__last-check">Last checked {{ formatTimestamp(audit.lastCheckedAt()) }}</p>
+      }
+      @for (error of audit.checkErrors(); track error) {
+        <p class="audit-panel__error" role="alert"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> {{ error }}</p>
+      }
+
+      <div class="audit-panel__list">
+        @for (notification of audit.pendingNotifications(); track notification.id) {
+          <article class="audit-item">
+            <div class="audit-item__top">
+              <span class="audit-item__icon" [class.audit-item__icon--missing]="notification.issue === 'package-awb-not-in-api'">
+                <i class="fa-solid" [class.fa-arrow-down]="notification.issue === 'api-awb-not-in-package'" [class.fa-arrow-up]="notification.issue === 'package-awb-not-in-api'" aria-hidden="true"></i>
+              </span>
+              <span class="audit-item__type">{{ statusLabel(notification) }}</span>
+            </div>
+            <div class="audit-item__awb"><strong>{{ notification.awbNumber }}</strong><span>{{ formatDate(notification.awbDate) }}</span></div>
+            <dl class="audit-item__details">
+              <div><dt>Account</dt><dd>{{ notification.accountNumber }}</dd></div>
+              @if (notification.senderName) {<div><dt>Consignee</dt><dd>{{ notification.senderName }}</dd></div>}
+              @if (notification.shipperReference) {<div><dt>Reference</dt><dd>{{ notification.shipperReference }}</dd></div>}
+              @if (notification.pieces) {<div><dt>Pieces</dt><dd>{{ notification.pieces }}</dd></div>}
+              @if (notification.weight) {<div><dt>Weight</dt><dd>{{ notification.weight }} kg</dd></div>}
+            </dl>
+
+            <label class="audit-note"><span>Action note <small>Optional</small></span><input [ngModel]="actionNotes()[notification.id] ?? ''" (ngModelChange)="setNote(notification.id, $event)" type="text" placeholder="Why is this being adjusted?" /></label>
+
+            @if (notification.issue === 'api-awb-not-in-package') {
+              <label class="audit-package-select"><span>Charge this shipment to</span>
+                <select [ngModel]="selectedPackage(notification.id)" (ngModelChange)="selectPackage(notification.id, $event)">
+                  <option [ngValue]="null">Select package</option>
+                  @for (customerPackage of packagesFor(notification); track customerPackage.id; let index = $index) {
+                    <option [ngValue]="customerPackage.id">{{ packageLabel(customerPackage, index) }} · {{ formatDate(customerPackage.createdAt) }}</option>
+                  }
+                </select>
+              </label>
+              <div class="audit-item__actions">
+                <button class="audit-action audit-action--primary" type="button" [disabled]="selectedPackage(notification.id) === null" (click)="addToPackage(notification)"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add to package</button>
+                <button class="audit-action" type="button" (click)="ignore(notification)">Ignore</button>
+              </div>
+            } @else {
+              <div class="audit-item__source">Recorded on Package {{ notification.sourcePackageId }}</div>
+              <div class="audit-item__actions">
+                <button class="audit-action audit-action--danger" type="button" (click)="removeFromPackage(notification)"><i class="fa-solid fa-minus" aria-hidden="true"></i> Remove from package</button>
+                <button class="audit-action" type="button" (click)="ignore(notification)">Ignore</button>
+              </div>
+            }
+          </article>
+        } @empty {
+          @if (!audit.isChecking()) {
+            @if (audit.checkErrors().length > 0) {
+              <div class="audit-empty audit-empty--warning">
+                <span><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span>
+                <strong>Some accounts could not be checked</strong>
+                <p>Review the account errors above and try again.</p>
+              </div>
+            } @else {
+              <div class="audit-empty">
+                <span><i class="fa-solid fa-circle-check" aria-hidden="true"></i></span>
+                <strong>All caught up</strong>
+                <p>No shipment differences need review.</p>
+              </div>
+            }
+          }
+        }
+      </div>
+
+      <footer class="audit-panel__footer">
+        <span>Account data is checked against package records.</span>
+        <button type="button" (click)="closePanel()">Done</button>
+      </footer>
+    </section>
+  }
+</div>

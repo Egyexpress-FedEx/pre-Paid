@@ -1,0 +1,147 @@
+<main class="visitor-dashboard">
+  <section class="visitor-hero" aria-labelledby="visitor-title">
+    <div class="visitor-hero__copy">
+      <span class="visitor-eyebrow"><i class="fa-solid fa-sparkles" aria-hidden="true"></i> EGYPT EXPRESS PREPAID</span>
+      <h1 id="visitor-title">A better way to move every shipment.</h1>
+      <p class="visitor-hero__welcome">Welcome, {{ visitorName() }}.</p>
+      <p class="visitor-hero__description">
+        Your sign-in is successful. This user is not linked to a shipping account yet, so shipment creation is unavailable. Explore prepaid options and talk with our team about getting started.
+      </p>
+      <div class="visitor-hero__actions">
+        <button class="visitor-button visitor-button--primary" type="button" (click)="explorePackages()">Explore packages <i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
+        <button class="visitor-button visitor-button--secondary" type="button" (click)="openInquiry()">Talk to our team</button>
+      </div>
+    </div>
+
+    <div class="visitor-hero__visual" aria-label="Prepaid shipping package illustration">
+      <div class="visual-orbit visual-orbit--one"></div>
+      <div class="visual-orbit visual-orbit--two"></div>
+      <div class="visual-tag"><i class="fa-solid fa-bolt" aria-hidden="true"></i> SIMPLE. FLEXIBLE. READY.</div>
+      <div class="visual-box visual-box--back"><i class="fa-solid fa-box" aria-hidden="true"></i></div>
+      <div class="visual-box visual-box--front"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
+      <div class="visual-shipment-count"><strong>20</strong><span>shipments<br />in a package</span></div>
+      <div class="visual-route"><span></span><i class="fa-solid fa-location-dot" aria-hidden="true"></i></div>
+    </div>
+  </section>
+
+  <section class="visitor-tools" aria-labelledby="tools-title">
+    <div class="visitor-section-heading">
+      <div>
+        <span class="visitor-kicker">ONE SHIPPING WORKSPACE</span>
+        <h2 id="tools-title">Everything you need, in one place</h2>
+      </div>
+      <p>Once an account is connected, the portal brings your shipment tools together in one workspace.</p>
+    </div>
+
+    <div class="visitor-tools__grid">
+      <article class="visitor-tool-card">
+        <span class="visitor-tool-card__icon"><i class="fa-solid fa-binoculars" aria-hidden="true"></i></span>
+        <h3>Track shipments</h3>
+        <p>Keep up with shipment progress and stay informed along the way.</p>
+      </article>
+      <article class="visitor-tool-card">
+        <span class="visitor-tool-card__icon"><i class="fa-solid fa-truck" aria-hidden="true"></i></span>
+        <h3>Manage pickups</h3>
+        <p>Review pickup requests and organize your shipping workflow.</p>
+      </article>
+      <article class="visitor-tool-card">
+        <span class="visitor-tool-card__icon"><i class="fa-solid fa-headset" aria-hidden="true"></i></span>
+        <h3>Get customer support</h3>
+        <p>Reach the support team when you need help with a shipment.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="plans" class="visitor-plans" aria-labelledby="plans-title">
+    <div class="visitor-section-heading visitor-section-heading--plans">
+      <div>
+        <span class="visitor-kicker">PREPAID PACKAGES</span>
+        <h2 id="plans-title">Choose the capacity that fits</h2>
+      </div>
+      <p>Shipment limits can be tailored to your business. Contact our team to discuss the right package.</p>
+    </div>
+
+    <div class="visitor-plans__grid">
+      <article class="visitor-plan-card">
+        <span class="visitor-plan-card__icon"><i class="fa-solid fa-box" aria-hidden="true"></i></span>
+        <span class="visitor-plan-card__label">A practical start</span>
+        <h3>10 shipments</h3>
+        <p>Get started with a straightforward prepaid allowance.</p>
+        <button type="button" (click)="openInquiry('10 shipments')">Ask about this package <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+      </article>
+
+      <article class="visitor-plan-card visitor-plan-card--featured">
+        <span class="visitor-plan-card__badge">POPULAR CHOICE</span>
+        <span class="visitor-plan-card__icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></span>
+        <span class="visitor-plan-card__label">For regular shipping</span>
+        <h3>20 shipments</h3>
+        <p>More room for growing delivery needs, managed in one portal.</p>
+        <button type="button" (click)="openInquiry('20 shipments')">Ask about this package <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+      </article>
+
+      <article class="visitor-plan-card">
+        <span class="visitor-plan-card__icon"><i class="fa-solid fa-sliders" aria-hidden="true"></i></span>
+        <span class="visitor-plan-card__label">Built around your volume</span>
+        <h3>Custom limit</h3>
+        <p>Discuss a shipment allowance that matches your operation.</p>
+        <button type="button" (click)="openInquiry('Custom shipment limit')">Request a custom package <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+      </article>
+    </div>
+  </section>
+
+  <footer class="visitor-footer">
+    <span><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Shipment creation becomes available when a shipping account is connected to this user.</span>
+    <a href="mailto:support@egypt-express.com">Contact support</a>
+  </footer>
+</main>
+
+@if (inquiryOpen()) {
+  <div class="inquiry-backdrop" role="presentation" (click)="closeInquiry()">
+    <section
+      class="inquiry-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="inquiry-title"
+      (click)="$event.stopPropagation()">
+      <header class="inquiry-dialog__header">
+        <span class="inquiry-dialog__icon" aria-hidden="true"><i class="fa-regular fa-paper-plane"></i></span>
+        <button class="inquiry-dialog__close" type="button" aria-label="Close inquiry form" (click)="closeInquiry()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+        <span class="visitor-kicker">{{ selectedPackage() === 'General enquiry' ? 'CONTACT OUR TEAM' : 'PACKAGE ENQUIRY' }}</span>
+        <h2 id="inquiry-title">Tell us what you need</h2>
+        <p>Share your details and our team can help with the right prepaid package.</p>
+        <div class="inquiry-dialog__package"><i class="fa-solid fa-box" aria-hidden="true"></i> {{ selectedPackage() }}</div>
+      </header>
+
+      <form class="inquiry-form" (submit)="$event.preventDefault()">
+        <label class="inquiry-field">
+          <span>Your name <b>*</b></span>
+          <input type="text" name="name" placeholder="Enter your full name" autocomplete="name" required />
+        </label>
+
+        <label class="inquiry-field">
+          <span>Mobile number <b>*</b></span>
+          <input type="tel" name="mobile" placeholder="e.g. 010 1234 5678" autocomplete="tel" required />
+        </label>
+
+        <label class="inquiry-field">
+          <span>Account number <small>Optional</small></span>
+          <input type="text" name="accountNumber" placeholder="If you already have one" autocomplete="off" />
+        </label>
+
+        <label class="inquiry-field inquiry-field--wide">
+          <span>How can we help? <b>*</b></span>
+          <textarea name="description" rows="4" placeholder="Tell us about your shipment needs or any questions…" required></textarea>
+        </label>
+
+        <p class="inquiry-form__note"><i class="fa-solid fa-lock" aria-hidden="true"></i> Your account number is optional. Add it only if you have one.</p>
+        <div class="inquiry-form__actions">
+          <button class="visitor-button visitor-button--secondary" type="button" (click)="closeInquiry()">Cancel</button>
+          <button class="visitor-button visitor-button--primary" type="button" disabled>Send inquiry</button>
+        </div>
+        <p class="inquiry-form__pending">Request submission will be connected in the next step.</p>
+      </form>
+    </section>
+  </div>
+}

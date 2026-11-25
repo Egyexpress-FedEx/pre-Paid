@@ -1,0 +1,46 @@
+@if (isOpen()) {
+  <div class="package-bills-backdrop" (click)="closed.emit()">
+    <section
+      class="package-bills-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="package-bills-title"
+      (click)="$event.stopPropagation()">
+      <header class="package-bills-dialog__header">
+        <div class="package-bills-dialog__heading">
+          <span class="package-bills-dialog__icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></span>
+          <div>
+            <span class="package-bills-dialog__eyebrow">SHIPMENT BILLS</span>
+            <h2 id="package-bills-title">{{ packageTitle() }}</h2>
+          </div>
+        </div>
+        <button class="package-bills-dialog__close" type="button" aria-label="Close" (click)="closed.emit()">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </header>
+
+      @if (bills().length > 0) {
+        <div class="package-bills-dialog__body">
+          <p class="package-bills-dialog__count">{{ bills().length }} shipment {{ bills().length === 1 ? 'bill' : 'bills' }}</p>
+          <ul class="package-bills-list">
+            @for (bill of bills(); track bill.awbNumber) {
+              <li class="package-bills-list__item">
+                <span class="package-bills-list__icon" aria-hidden="true"><i class="fa-solid fa-barcode"></i></span>
+                <div class="package-bills-list__details">
+                  <strong>{{ bill.awbNumber }}</strong>
+                  <time [attr.datetime]="bill.createdAt">{{ formatDate(bill.createdAt) }}</time>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <div class="package-bills-empty">
+          <span class="package-bills-empty__icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></span>
+          <h3>No shipment bills yet</h3>
+          <p>You haven't created any shipment bills for this package yet.</p>
+        </div>
+      }
+    </section>
+  </div>
+}

@@ -1,0 +1,107 @@
+<main class="customer-dashboard">
+  <section class="usage-overview" aria-labelledby="usage-title">
+    <div class="usage-overview__copy">
+      <span class="dashboard-kicker">CUSTOMER DASHBOARD</span>
+      <h1 id="usage-title">Your shipment allowance</h1>
+      <p>Open packages are combined here. When all are closed, your final usage stays visible. Package details remain separate below.</p>
+    </div>
+
+    <div class="usage-overview__summary">
+      <div class="summary-heading">
+        <span class="summary-icon" aria-hidden="true"><i class="fa-solid fa-boxes-stacked"></i></span>
+        <span>Total shipment usage</span>
+      </div>
+      <div class="summary-count">
+        <strong>{{ customerState.usedShipments() }}</strong>
+        <span>/ {{ customerState.shipmentLimit() }}</span>
+      </div>
+      <div
+        class="summary-progress"
+        role="progressbar"
+        aria-label="Combined shipment package usage"
+        aria-valuemin="0"
+        [attr.aria-valuemax]="customerState.shipmentLimit() || 1"
+        [attr.aria-valuenow]="customerState.usedShipments()">
+        <span [style.width.%]="customerState.shipmentProgress()"></span>
+      </div>
+      <div class="summary-footer">
+        @if (customerState.shipmentRemaining() > 0) {
+          <span>{{ customerState.shipmentRemaining() }} shipments remaining</span>
+        } @else {
+          <span class="summary-footer__closed"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> No open package has shipments available</span>
+        }
+        <strong>{{ customerState.shipmentProgress() }}%</strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="package-section" aria-labelledby="packages-title">
+    <div class="section-heading">
+      <div>
+        <span class="dashboard-kicker">PACKAGE DETAILS</span>
+        <h2 id="packages-title">Your packages</h2>
+      </div>
+      <span class="package-count">{{ customerState.customerPackages().length }} total</span>
+    </div>
+
+    @if (customerState.customerPackages().length > 0) {
+      <div class="package-grid">
+        @for (customerPackage of customerState.customerPackages(); track customerPackage.id; let index = $index) {
+          <button
+            class="package-card"
+            type="button"
+            [attr.aria-label]="'View details for package ' + (index + 1) + ', ' + customerPackage.usedShipments + ' of ' + customerPackage.shipmentLimit + ' shipments, ' + customerPackage.status"
+            [class.package-card--closed]="customerPackage.status === 'Closed'"
+            [class.package-card--inactive]="customerPackage.status === 'Inactive'"
+            (click)="openPackage(customerPackage.id, 'Package ' + (index + 1))">
+            <span class="package-card__top">
+              <span class="package-card__icon" aria-hidden="true"><i class="fa-solid fa-box"></i></span>
+              <span class="package-status" [class.package-status--closed]="customerPackage.status === 'Closed'" [class.package-status--inactive]="customerPackage.status === 'Inactive'">
+                <i class="fa-solid fa-circle" aria-hidden="true"></i>{{ customerPackage.status }}
+              </span>
+            </span>
+
+            <span class="package-card__title">
+              <span class="package-card__identity">
+                <strong>Package {{ index + 1 }}</strong>
+                <span>Added {{ formatDate(customerPackage.createdAt) }}</span>
+              </span>
+              <strong>{{ customerPackage.usedShipments }}<span> / {{ customerPackage.shipmentLimit }}</span></strong>
+            </span>
+
+            <span
+              class="package-progress"
+              role="progressbar"
+              [attr.aria-label]="'Package ' + (index + 1) + ' shipment usage'"
+              aria-valuemin="0"
+              [attr.aria-valuemax]="customerPackage.shipmentLimit"
+              [attr.aria-valuenow]="customerPackage.usedShipments">
+              <span [style.width.%]="customerPackage.progress"></span>
+            </span>
+            <span class="package-card__usage-meta">
+              <span>{{ customerPackage.status === 'Closed' ? 'Package limit reached' : customerPackage.status === 'Inactive' ? 'Package disabled' : customerPackage.remainingShipments + ' shipments remaining' }}</span>
+              <strong>{{ customerPackage.progress }}%</strong>
+            </span>
+            <span class="package-card__footer">
+              <span class="package-card__view">View details <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="packages-empty">
+        <span aria-hidden="true"><i class="fa-regular fa-folder-open"></i></span>
+        <h3>No packages available</h3>
+        <p>There are no shipment packages assigned to this account.</p>
+      </div>
+    }
+  </section>
+</main>
+
+@if (selectedPackage(); as selected) {
+  <app-package-bills-dialog
+    [isOpen]="true"
+    [packageTitle]="selected.title"
+    [bills]="shipmentBills()"
+    (closed)="closePackage()" />
+}

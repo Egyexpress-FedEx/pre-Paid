@@ -1,0 +1,247 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.customer-sidebar {
+  width: 248px;
+  height: 100%;
+  padding: 20px 14px;
+  border-right: 1px solid #e5e8ee;
+  background: #fff;
+}
+
+.customer-sidebar__limit {
+  padding: 4px 8px 17px;
+}
+
+.customer-sidebar__limit--exhausted .customer-sidebar__limit-icon {
+  border-color: #f0d2cd;
+  color: #ad4238;
+  background: #fff0ee;
+}
+
+.customer-sidebar__limit--exhausted .customer-sidebar__limit-value strong {
+  color: #ad4238;
+}
+
+.customer-sidebar__limit-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 13px;
+}
+
+.customer-sidebar__limit-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #e8ebf0;
+  border-radius: 8px;
+  color: #67758b;
+  background: #f8f9fb;
+  font-size: 0.78rem;
+}
+
+.customer-sidebar__limit-label {
+  color: #68758a;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.customer-sidebar__limit-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.customer-sidebar__limit-value strong {
+  color: #263348;
+  font-size: 1.42rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.customer-sidebar__limit-value span {
+  color: #8792a2;
+  font-size: 0.76rem;
+}
+
+.customer-sidebar__progress {
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf0f4;
+}
+
+.customer-sidebar__progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #8e9bad;
+  transition: width 180ms ease;
+}
+
+.customer-sidebar__limit--exhausted .customer-sidebar__progress {
+  background: #f4d9d5;
+}
+
+.customer-sidebar__limit--exhausted .customer-sidebar__progress span {
+  background: #bd5147;
+}
+
+.customer-sidebar__remaining {
+  margin: 8px 0 0;
+  color: #8792a2;
+  font-size: 0.68rem;
+}
+
+.customer-sidebar__limit-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px solid #efd7d3;
+  border-radius: 8px;
+  color: #a6433b;
+  background: #fff4f2;
+  font-size: 0.68rem;
+}
+
+.customer-sidebar__limit-alert > i {
+  margin-top: 2px;
+  font-size: 0.72rem;
+}
+
+.customer-sidebar__limit-alert span {
+  display: grid;
+  gap: 3px;
+}
+
+.customer-sidebar__limit-alert strong {
+  font-size: 0.68rem;
+}
+
+.customer-sidebar__limit-alert small {
+  color: #946b66;
+  font-size: 0.61rem;
+}
+
+.customer-sidebar__divider {
+  height: 1px;
+  margin: 0 0 17px;
+  background: #edf0f4;
+}
+
+.customer-sidebar__section-label {
+  margin: 0 10px 10px;
+  color: #929baa;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.customer-sidebar__nav {
+  display: grid;
+  gap: 5px;
+}
+
+.customer-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: #536176;
+  font-size: 0.83rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+
+.customer-sidebar__link i {
+  width: 19px;
+  color: #79869a;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+.customer-sidebar__link:hover {
+  color: #27354a;
+  background: #f7f8fa;
+}
+
+.customer-sidebar__link--active {
+  border-color: #f7dfd4;
+  color: #a84326;
+  background: #fff6f1;
+  font-weight: 600;
+}
+
+.customer-sidebar__link--active i {
+  color: #ca5635;
+}
+
+.customer-sidebar__link--disabled {
+  position: relative;
+  color: #88919a;
+  background: #f0f2f4;
+  cursor: not-allowed;
+}
+
+.customer-sidebar__link--disabled > i:first-child {
+  color: #939ca5;
+}
+
+.customer-sidebar__link--disabled > span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+}
+
+.customer-sidebar__link--disabled small {
+  color: #a84c43;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.customer-sidebar__link--disabled .customer-sidebar__lock {
+  width: auto;
+  color: #a84c43;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 760px) {
+  .customer-sidebar {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 14px;
+    border-right: 1px solid #e5e8ee;
+    border-bottom: 0;
+  }
+
+  .customer-sidebar__nav {
+    display: grid;
+    gap: 5px;
+  }
+
+  .customer-sidebar__link {
+    min-height: 48px;
+    gap: 14px;
+    padding: 0 14px;
+    font-size: 0.87rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .customer-sidebar {
+    padding: 18px 12px;
+  }
+}
